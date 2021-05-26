@@ -10,9 +10,6 @@ linux {
   source = "https://static.rust-lang.org/dist/rust-${version}-x86_64-unknown-linux-musl.tar.xz"
 }
 
-version "1.51.0" {}
-version "1.52.1" {}
-
 channel nightly {
   update = "24h"
   darwin {
@@ -23,3 +20,6 @@ channel nightly {
     source = "https://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-musl.tar.xz"
   }
 }
+
+version "1.51.0" {}
+version "1.52.1" {}

@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # No shallow clone, we need all history!
+      - run: echo "CHANGED_FILES=$(git diff --name-only ${{ github.event.before }}..${{ github.event.after }})" >> $GITHUB_ENV
       - name: Install Hermit
         run: |
           set -e
@@ -26,4 +29,4 @@ jobs:
           ~/bin/hermit validate "file://$PWD"
           ~/bin/hermit init --sources="file://$PWD" ./testenv
           . ./testenv/bin/activate-hermit
-          hermit search -s | xargs hermit test --level=debug
+          git diff --name-only '${{ github.event.before }}..${{ github.event.after }}' | fgrep .hcl | cut -d. -f1 | xargs -n1 hermit search -s | grep -v -E '@latest|@[0-9]' | xargs -n1 hermit test --level=debug
