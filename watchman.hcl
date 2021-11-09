@@ -3,4 +3,8 @@ source = "https://github.com/facebook/watchman/releases/download/v${version}/wat
 binaries = ["watchman"]
 
 version "2021.01.11.00" {
+  darwin {
+    arch = "arm64"
+    source = "https://github.com/facebook/watchman/releases/download/v${version}/watchman-${version}-macos.zip"
+  }
 }
