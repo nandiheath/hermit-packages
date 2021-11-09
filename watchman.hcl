@@ -4,6 +4,6 @@ binaries = ["watchman"]
 
 version "2021.01.11.00" {
   darwin {
-    source = "https://github.com/facebook/watchman/releases/download/v${version}/watchman-${version}-macos.zip"
+    source = "https://github.com/facebook/watchman/releases/download/v${version}/watchman-v${version}-macos.zip"
   }
 }
