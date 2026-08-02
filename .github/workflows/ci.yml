@@ -1,0 +1,63 @@
+name: Package index
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  conventional:
+    name: Conventional commits
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  validate:
+    name: Package index
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Validate Hermit source
+        run: ./bin/hermit validate source "file://$PWD"
+      - name: Lint updater and workflows
+        run: |
+          ./bin/shellcheck scripts/update_routerctl.sh
+          ./bin/actionlint
+      - name: Reject invalid updater events
+        run: |
+          if SOURCE_REPOSITORY=invalid TAG=v0.2.0 VERSION=0.2.0 RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_routerctl.sh; then exit 1; fi
+          if SOURCE_REPOSITORY=nandiheath/homelab-cli TAG=v0.2.0 VERSION=invalid RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_routerctl.sh; then exit 1; fi
+          if SOURCE_REPOSITORY=nandiheath/homelab-cli TAG=v0.2.0 VERSION=0.2.1 RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_routerctl.sh; then exit 1; fi
+  integration:
+    name: Package index (${{ matrix.os }})
+    needs: validate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install and test published routerctl
+        if: hashFiles('routerctl.hcl') != ''
+        run: |
+          . ./bin/activate-hermit
+          hermit test --no-check-sources routerctl@latest
+          expected_version=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' routerctl.hcl)
+          test "$(routerctl version)" = "$expected_version"
+      - name: Confirm duplicate event is a no-op
+        if: hashFiles('routerctl.hcl') != ''
+        env:
+          SOURCE_REPOSITORY: nandiheath/homelab-cli
+          TAG: v0.2.0
+          VERSION: 0.2.0
+          RELEASE_ID: '1'
+          RELEASE_URL: https://github.com/nandiheath/homelab-cli/releases/tag/v0.2.0
+        run: |
+          ./scripts/update_routerctl.sh
+          git diff --exit-code -- routerctl.hcl

@@ -1,0 +1,61 @@
+name: Update routerctl
+
+on:
+  repository_dispatch:
+    types: [homelab-cli-release-published]
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate dispatch payload
+        env:
+          SOURCE_REPOSITORY: ${{ github.event.client_payload.source_repository }}
+          TAG: ${{ github.event.client_payload.tag }}
+          VERSION: ${{ github.event.client_payload.version }}
+          RELEASE_ID: ${{ github.event.client_payload.release_id }}
+          RELEASE_URL: ${{ github.event.client_payload.release_url }}
+        run: |
+          test "$SOURCE_REPOSITORY" = nandiheath/homelab-cli
+          test "$TAG" = "v$VERSION"
+          printf '%s\n' "$VERSION" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+          test -n "$RELEASE_ID"
+          test -n "$RELEASE_URL"
+      - name: Create package-index app token
+        id: app-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ vars.HOMELAB_RELEASE_BRIDGE_APP_ID }}
+          private-key: ${{ secrets.HOMELAB_RELEASE_BRIDGE_PRIVATE_KEY }}
+          owner: nandiheath
+          repositories: hermit-packages
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Update checksum-pinned manifest
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          SOURCE_REPOSITORY: ${{ github.event.client_payload.source_repository }}
+          TAG: ${{ github.event.client_payload.tag }}
+          VERSION: ${{ github.event.client_payload.version }}
+          RELEASE_ID: ${{ github.event.client_payload.release_id }}
+          RELEASE_URL: ${{ github.event.client_payload.release_url }}
+        run: ./scripts/update_routerctl.sh
+      - name: Create manifest pull request
+        id: create-pr
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: automation/routerctl-${{ github.event.client_payload.version }}
+          delete-branch: true
+          commit-message: "chore(routerctl): add ${{ github.event.client_payload.version }}"
+          title: "chore(routerctl): add ${{ github.event.client_payload.version }}"
+          body: Automated checksum update for `${{ github.event.client_payload.tag }}` from `nandiheath/homelab-cli`.
+      - name: Schedule squash auto-merge
+        if: steps.create-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh pr merge --auto --squash "${{ steps.create-pr.outputs.pull-request-number }}"
