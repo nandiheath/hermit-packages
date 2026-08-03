@@ -46,13 +46,17 @@ jobs:
       - name: Install and test published routerctl
         if: hashFiles('routerctl.hcl') != ''
         run: |
-          . ./bin/activate-hermit
+          environment=$(mktemp -d)
+          ./bin/hermit init --sources="file://$PWD" "$environment"
+          . "$environment/bin/activate-hermit"
+          hermit install routerctl@latest
           hermit test --no-check-sources routerctl@latest
           expected_version=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' routerctl.hcl)
           test "$(routerctl version)" = "$expected_version"
       - name: Confirm duplicate event is a no-op
         if: hashFiles('routerctl.hcl') != ''
         env:
+          GH_TOKEN: ${{ secrets.HOMELAB_HERMIT_PACKAGES_DEPLOYER_TOKEN }}
           SOURCE_REPOSITORY: nandiheath/homelab-cli
           TAG: v0.2.0
           VERSION: 0.2.0
