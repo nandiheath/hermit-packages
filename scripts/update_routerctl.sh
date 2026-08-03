@@ -66,11 +66,12 @@ EOF
 fi
 
 ./bin/hermit manifest auto-version --update-digests routerctl.hcl
+./bin/hermit manifest add-digests routerctl.hcl
 if ! grep -F "version \"$VERSION\"" routerctl.hcl >/dev/null; then
   echo "routerctl manifest does not contain version $VERSION" >&2
   exit 1
 fi
-version_urls=$(grep -c "routerctl_${VERSION}_" routerctl.hcl || true)
+version_urls=$(grep -c "/v$VERSION/routerctl_" routerctl.hcl || true)
 if [ "$version_urls" -ne 4 ]; then
   echo "routerctl manifest must contain exactly four release URLs for $VERSION" >&2
   exit 1
