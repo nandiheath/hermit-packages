@@ -49,6 +49,7 @@ jobs:
           environment=$(mktemp -d)
           ./bin/hermit init --sources="file://$PWD" "$environment"
           . "$environment/bin/activate-hermit"
+          hermit install routerctl@latest
           hermit test --no-check-sources routerctl@latest
           expected_version=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' routerctl.hcl)
           test "$(routerctl version)" = "$expected_version"
