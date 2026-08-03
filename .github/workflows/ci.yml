@@ -18,7 +18,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   validate:
-    name: Package index
+    name: Package index validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -65,3 +65,13 @@ jobs:
         run: |
           ./scripts/update_routerctl.sh
           git diff --exit-code -- routerctl.hcl
+  complete:
+    name: Package index
+    if: always()
+    needs: [validate, integration]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every validation job
+        run: |
+          test "${{ needs.validate.result }}" = success
+          test "${{ needs.integration.result }}" = success
