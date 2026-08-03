@@ -56,6 +56,7 @@ jobs:
       - name: Confirm duplicate event is a no-op
         if: hashFiles('routerctl.hcl') != ''
         env:
+          GH_TOKEN: ${{ secrets.HOMELAB_HERMIT_PACKAGES_DEPLOYER_TOKEN }}
           SOURCE_REPOSITORY: nandiheath/homelab-cli
           TAG: v0.2.0
           VERSION: 0.2.0
