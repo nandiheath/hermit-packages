@@ -26,13 +26,13 @@ jobs:
         run: ./bin/hermit validate source "file://$PWD"
       - name: Lint updater and workflows
         run: |
-          ./bin/shellcheck scripts/update_routerctl.sh
+          ./bin/shellcheck scripts/update_homelab.sh
           ./bin/actionlint
       - name: Reject invalid updater events
         run: |
-          if SOURCE_REPOSITORY=invalid TAG=v0.2.0 VERSION=0.2.0 RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_routerctl.sh; then exit 1; fi
-          if SOURCE_REPOSITORY=nandiheath/homelab-cli TAG=v0.2.0 VERSION=invalid RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_routerctl.sh; then exit 1; fi
-          if SOURCE_REPOSITORY=nandiheath/homelab-cli TAG=v0.2.0 VERSION=0.2.1 RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_routerctl.sh; then exit 1; fi
+          if SOURCE_REPOSITORY=invalid TAG=v0.3.0 VERSION=0.3.0 RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_homelab.sh; then exit 1; fi
+          if SOURCE_REPOSITORY=nandiheath/homelab-cli TAG=v0.3.0 VERSION=invalid RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_homelab.sh; then exit 1; fi
+          if SOURCE_REPOSITORY=nandiheath/homelab-cli TAG=v0.3.0 VERSION=0.3.1 RELEASE_ID=1 RELEASE_URL=https://example.invalid ./scripts/update_homelab.sh; then exit 1; fi
   integration:
     name: Package index (${{ matrix.os }})
     needs: validate
@@ -43,28 +43,28 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Install and test published routerctl
-        if: hashFiles('routerctl.hcl') != ''
+      - name: Install and test published homelab
+        if: hashFiles('homelab.hcl') != ''
         run: |
           environment=$(mktemp -d)
           ./bin/hermit init --sources="file://$PWD" "$environment"
           . "$environment/bin/activate-hermit"
-          hermit install routerctl@latest
-          hermit test --no-check-sources routerctl@latest
-          expected_version=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' routerctl.hcl)
-          test "$(routerctl version)" = "$expected_version"
+          hermit install homelab@latest
+          hermit test --no-check-sources homelab@latest
+          expected_version=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' homelab.hcl)
+          test "$(homelab version)" = "$expected_version"
       - name: Confirm duplicate event is a no-op
-        if: hashFiles('routerctl.hcl') != ''
+        if: hashFiles('homelab.hcl') != ''
         env:
           GH_TOKEN: ${{ secrets.HOMELAB_HERMIT_PACKAGES_DEPLOYER_TOKEN }}
           SOURCE_REPOSITORY: nandiheath/homelab-cli
-          TAG: v0.2.0
-          VERSION: 0.2.0
+          TAG: v0.3.0
+          VERSION: 0.3.0
           RELEASE_ID: '1'
-          RELEASE_URL: https://github.com/nandiheath/homelab-cli/releases/tag/v0.2.0
+          RELEASE_URL: https://github.com/nandiheath/homelab-cli/releases/tag/v0.3.0
         run: |
-          ./scripts/update_routerctl.sh
-          git diff --exit-code -- routerctl.hcl
+          ./scripts/update_homelab.sh
+          git diff --exit-code -- homelab.hcl
   complete:
     name: Package index
     if: always()

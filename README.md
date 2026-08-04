@@ -11,4 +11,4 @@ sources = [
 ]
 ```
 
-`routerctl` releases are added automatically from `nandiheath/homelab-cli`. This repository intentionally does not mirror the official package manifests.
+`homelab` releases are added automatically from `nandiheath/homelab-cli`. This repository intentionally does not mirror the official package manifests.
