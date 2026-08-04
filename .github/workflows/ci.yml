@@ -58,11 +58,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HOMELAB_HERMIT_PACKAGES_DEPLOYER_TOKEN }}
           SOURCE_REPOSITORY: nandiheath/homelab-cli
-          TAG: v0.3.0
-          VERSION: 0.3.0
           RELEASE_ID: '1'
-          RELEASE_URL: https://github.com/nandiheath/homelab-cli/releases/tag/v0.3.0
         run: |
+          VERSION=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' homelab.hcl)
+          TAG="v$VERSION"
+          RELEASE_URL="https://github.com/nandiheath/homelab-cli/releases/tag/$TAG"
+          export VERSION TAG RELEASE_URL
           ./scripts/update_homelab.sh
           git diff --exit-code -- homelab.hcl
   complete:

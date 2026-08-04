@@ -41,8 +41,8 @@ for asset in $required_assets; do
   fi
 done
 
-if [ ! -f homelab.hcl ]; then
-  cat >homelab.hcl <<EOF
+if ! grep -F "version \"$VERSION\"" homelab.hcl >/dev/null 2>&1; then
+cat >homelab.hcl <<EOF
 description = "Unified homelab renderer and OpenWrt controller"
 binaries = ["homelab"]
 test = "homelab version"
@@ -63,10 +63,9 @@ version "$VERSION" {
 
 sha256sums = {}
 EOF
-fi
 
-./bin/hermit manifest auto-version --update-digests homelab.hcl
 ./bin/hermit manifest add-digests homelab.hcl
+fi
 if ! grep -F "version \"$VERSION\"" homelab.hcl >/dev/null; then
   echo "homelab manifest does not contain version $VERSION" >&2
   exit 1
