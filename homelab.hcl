@@ -10,15 +10,15 @@ platform "linux" {
   source = "https://github.com/nandiheath/homelab-cli/releases/download/v${version}/homelab_${version}_Linux_${arch}.tar.gz"
 }
 
-version "0.3.2" {
+version "0.4.0" {
   auto-version {
     github-release = "nandiheath/homelab-cli"
   }
 }
 
 sha256sums = {
-  "https://github.com/nandiheath/homelab-cli/releases/download/v0.3.2/homelab_0.3.2_Linux_amd64.tar.gz": "172410891ec23df2575778f42be6aae2dbfb2583486c0445fccb18c7cb804539",
-  "https://github.com/nandiheath/homelab-cli/releases/download/v0.3.2/homelab_0.3.2_Darwin_amd64.tar.gz": "a55f5d25440a5f2b2fab4cc0af6a3a01b07c1a6272959fb610c422bbfcc28b7c",
-  "https://github.com/nandiheath/homelab-cli/releases/download/v0.3.2/homelab_0.3.2_Darwin_arm64.tar.gz": "0ea67a498a0e0c310788a234dfc3a55e70adc9f3aaeb3b8c01c9b8828ddc3f3e",
-  "https://github.com/nandiheath/homelab-cli/releases/download/v0.3.2/homelab_0.3.2_Linux_arm64.tar.gz": "ce94a0dae69bb881b334e216bf83923ff873eb732b46a83e96f98b160c805459",
+  "https://github.com/nandiheath/homelab-cli/releases/download/v0.4.0/homelab_0.4.0_Linux_amd64.tar.gz": "e572fe24d9e428ff56a48a5c8a770f15551f67b30ffacbd1938f9c7be92a88b6",
+  "https://github.com/nandiheath/homelab-cli/releases/download/v0.4.0/homelab_0.4.0_Darwin_amd64.tar.gz": "010bb2cdb9d7597d063911fcf30185f1600e59ec5e9eccd25276ae67504b4346",
+  "https://github.com/nandiheath/homelab-cli/releases/download/v0.4.0/homelab_0.4.0_Darwin_arm64.tar.gz": "6fcd6ada1346f699cf5046adcb3cc5382d3a784a0a7d75421e8879ab66de8872",
+  "https://github.com/nandiheath/homelab-cli/releases/download/v0.4.0/homelab_0.4.0_Linux_arm64.tar.gz": "a081f6c085313474450b978cb8ca508dba1337048075adfd9ae8a0a0a3d3fbca",
 }
