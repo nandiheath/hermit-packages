@@ -46,12 +46,17 @@ jobs:
       - name: Install and test published homelab
         if: hashFiles('homelab.hcl') != ''
         run: |
+          historical_environment=$(mktemp -d)
+          ./bin/hermit init --sources="file://$PWD" "$historical_environment"
+          . "$historical_environment/bin/activate-hermit"
+          hermit install homelab-0.3.0
+          test "$(homelab version)" = 0.3.0
           environment=$(mktemp -d)
           ./bin/hermit init --sources="file://$PWD" "$environment"
           . "$environment/bin/activate-hermit"
           hermit install homelab@latest
           hermit test --no-check-sources homelab@latest
-          expected_version=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' homelab.hcl)
+          expected_version=$(awk -F '"' '/^version "/ { for (i = 2; i <= NF; i += 2) value=$i } END { print value }' homelab.hcl)
           test "$(homelab version)" = "$expected_version"
       - name: Confirm duplicate event is a no-op
         if: hashFiles('homelab.hcl') != ''
@@ -60,7 +65,7 @@ jobs:
           SOURCE_REPOSITORY: nandiheath/homelab-cli
           RELEASE_ID: '1'
         run: |
-          VERSION=$(awk -F '"' '/^version "/ { value=$2 } END { print value }' homelab.hcl)
+          VERSION=$(awk -F '"' '/^version "/ { for (i = 2; i <= NF; i += 2) value=$i } END { print value }' homelab.hcl)
           TAG="v$VERSION"
           RELEASE_URL="https://github.com/nandiheath/homelab-cli/releases/tag/$TAG"
           export VERSION TAG RELEASE_URL
