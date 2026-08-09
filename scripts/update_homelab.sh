@@ -41,32 +41,23 @@ for asset in $required_assets; do
   fi
 done
 
-if ! grep -F "version \"$VERSION\"" homelab.hcl >/dev/null 2>&1; then
-cat >homelab.hcl <<EOF
-description = "Unified homelab renderer and OpenWrt controller"
-binaries = ["homelab"]
-test = "homelab version"
-
-platform "darwin" {
-  source = "https://github.com/nandiheath/homelab-cli/releases/download/v\${version}/homelab_\${version}_Darwin_\${arch}.tar.gz"
+manifest_has_version() {
+  awk -v wanted="\"$VERSION\"" '
+    $1 == "version" {
+      for (i = 2; i <= NF; i++) {
+        if ($i == wanted) {
+          found = 1
+        }
+      }
+    }
+    END { exit !found }
+  ' homelab.hcl
 }
 
-platform "linux" {
-  source = "https://github.com/nandiheath/homelab-cli/releases/download/v\${version}/homelab_\${version}_Linux_\${arch}.tar.gz"
-}
-
-version "$VERSION" {
-  auto-version {
-    github-release = "nandiheath/homelab-cli"
-  }
-}
-
-sha256sums = {}
-EOF
-
-./bin/hermit manifest add-digests homelab.hcl
+if ! manifest_has_version; then
+  ./bin/hermit manifest auto-version --update-digests homelab.hcl
 fi
-if ! grep -F "version \"$VERSION\"" homelab.hcl >/dev/null; then
+if ! manifest_has_version; then
   echo "homelab manifest does not contain version $VERSION" >&2
   exit 1
 fi
